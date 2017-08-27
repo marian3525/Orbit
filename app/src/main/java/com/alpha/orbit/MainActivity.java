@@ -61,29 +61,11 @@ public class MainActivity extends AppCompatActivity {
         periodText = (TextView) findViewById(R.id.textView14);
 
         prefs = this.getSharedPreferences("restore", MODE_PRIVATE);
-        /*if(prefs.getFloat("massBase", -1)!=-1) {
-            massBase = prefs.getFloat("massBase", -1);
-            massExponent = prefs.getInt("massExponent", -1);
-            radius = prefs.getInt("radius", -1);
-            position = prefs.getInt("position", -1);
-            apoapsis = prefs.getInt("apoapsis", -1);
-            periapsis = prefs.getInt("periapsis", -1);
-        }*/
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        /*SharedPreferences.Editor editor = prefs.edit();
-        editor.putFloat("massBase", (float) massBase);
-        editor.putInt("massExponent", massExponent);
-        editor.putInt("radius", (int)radius);
-        editor.putInt("position", (int) position);
-        editor.putInt("apoapsis", (int) apoapsis);
-        editor.putInt("periapsis", (int) periapsis);
-        editor.putFloat("period", (float) period);
-        updateViews();
-        */
     }
 
     @TargetApi(24)
