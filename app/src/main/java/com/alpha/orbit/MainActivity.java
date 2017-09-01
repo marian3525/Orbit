@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     EditText orbitalPosition;
     EditText apoapsisText;
     EditText periapsisText;
+    CheckBox isEscape;
 
     static BigDecimal mass;        //input
     static double position;          //input
@@ -59,6 +62,16 @@ public class MainActivity extends AppCompatActivity {
         apoapsisText = (EditText) findViewById(R.id.editText6);
         periapsisText = (EditText) findViewById(R.id.editText7);
         periodText = (TextView) findViewById(R.id.textView14);
+        isEscape = (CheckBox) findViewById(R.id.checkBox);
+
+        isEscape.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b==false) {
+                    apoapsisText.setText(periapsisText.getText());
+                }
+            }
+        });
 
         prefs = this.getSharedPreferences("restore", MODE_PRIVATE);
     }
@@ -72,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
     public void onClick(View v) {
         //lengths in km and weights in kg
         G = BigDecimal.valueOf(6.67 * Math.pow(10, -11));
+        BigDecimal aux3;
+        BigDecimal aux2;
+        BigDecimal aux1;
 
         try {
             radius = Double.valueOf(radiusText.getText().toString()) * 1000;
@@ -84,6 +100,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        if(isEscape.isChecked()) {
+            axis = Double.MAX_VALUE;
+            apoapsisText.setText("Infinity");
+        }
+        else {
+            axis = (apoapsis + periapsis) / 2;
+        }
+
 
         massBase = Double.valueOf(massBaseText.getText().toString());
 
@@ -91,16 +115,18 @@ public class MainActivity extends AppCompatActivity {
 
         mass = BigDecimal.valueOf(massBase).multiply(BigDecimal.TEN.pow(BigDecimal.valueOf(massExponent)));     //mass = massBase*10^massExponent for short
 
-        axis = (apoapsis + periapsis) / 2;
-
         Double u = G.multiply(mass).doubleValue();
 
-        /* The orbital period is given by the formula: T = 2*pi*sqrt(semi major axis^3/GM)
-          The result is given in seconds and formatted according to its scale in formatPeriod()
-         */
-        period = 2 * Math.PI * Math.sqrt(Math.pow(axis, 3) / u);
-
-        formatPeriod(period);
+        if(isEscape.isChecked()) {
+            periodText.setText("Infinity");
+        }
+        else {
+             /* The orbital period is given by the formula: T = 2*pi*sqrt(semi major axis^3/GM)
+             The result is given in seconds and formatted according to its scale in formatPeriod()
+            */
+            period = 2 * Math.PI * Math.sqrt(Math.pow(axis, 3) / u);
+            formatPeriod(period);
+        }
 
         BigDecimal vSquared;
 
@@ -112,9 +138,18 @@ public class MainActivity extends AppCompatActivity {
           The formula used to determine the orbital speed at any point along the elipse is
           v^2 = GM(2/position - 1/semi major axis)
          */
-        BigDecimal aux1 = new BigDecimal(2).divide(new BigDecimal(position), 30, BigDecimal.ROUND_HALF_UP);
-        BigDecimal aux2 = new BigDecimal(1).divide(new BigDecimal(axis), 30, BigDecimal.ROUND_HALF_UP);
-        BigDecimal aux3 = aux1.subtract(aux2);
+
+        aux1 = new BigDecimal(2).divide(new BigDecimal(position), 30, BigDecimal.ROUND_HALF_UP);
+
+        aux2 = new BigDecimal(1).divide(new BigDecimal(axis), 30, BigDecimal.ROUND_HALF_UP);
+
+        try {
+            aux3 = aux1.subtract(aux2);
+        }
+        catch(NumberFormatException nfe) {
+            nfe.printStackTrace();
+            aux3 = aux1;
+        }
 
         vSquared = vSquared.multiply(aux3);
         double s = vSquared.doubleValue();
